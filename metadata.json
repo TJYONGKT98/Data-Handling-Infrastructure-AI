@@ -1,0 +1,189 @@
+{
+  "dataset": "Residential Mortgage Arrears and Repossession Statistics",
+  "publisher": "Central Bank of Ireland",
+  "source_url": "https://data.gov.ie/dataset/residential-mortgage-arrears-and-repossession-statistics",
+  "licence": "CC BY 4.0",
+  "source_coverage": "2009-09-30 to latest release, subject to revision",
+  "raw_file": {
+    "gcs_path": "raw/moa-open-data.csv",
+    "encoding": "cp1252",
+    "sha256": "67b8ac6b677928f8a73d90a5a3bfee77c7e0a4bd707add7833bd7533ce1540ee",
+    "size_bytes": 2367862,
+    "rows": 19199,
+    "pulled_on": "2026-09-30"
+  },
+  "storage": {
+    "raw_and_exports": "gs://mortgage_irish_forecast_trends (raw/, sharded/), object versioning on",
+    "queryable_store": "BigQuery mortgages-forecasting-trends.mortgage_arrears",
+    "tables": [
+      "moa_tidy_long",
+      "features_v1",
+      "coop_features_v1"
+    ],
+    "split_views": [
+      "features_v1_train",
+      "features_v1_dev",
+      "features_v1_test",
+      "features_v1_new_data"
+    ],
+    "export_format": "parquet"
+  },
+  "processing": {
+    "entity_used": "All",
+    "target": "arrears_total",
+    "stock_row": null,
+    "over_180_method": "residual: total - up_to_90 - 91_to_180",
+    "over_180_overlap_max_abs_diff": 0.0,
+    "value_units": "account counts as reported; EUR (000) converted to EUR where money columns are used",
+    "lags": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "feature_version": "v1",
+    "co_operation_features": "in coop_features_v1 (data from 2019-09-30); not part of the split files"
+  },
+  "split": {
+    "strategy": "historical, defined on the TARGET quarter; whole quarters go to one partition",
+    "boundaries": {
+      "train_target_end": "2020Q4",
+      "dev_target_end": "2022Q4",
+      "test_target_end": "2024Q4",
+      "new_data_target_start": "2025Q1"
+    },
+    "train": {
+      "rows": 71,
+      "feature_quarters": 41,
+      "first_feature_quarter": "2010-09-30",
+      "last_feature_quarter": "2020-09-30",
+      "first_target_quarter": "2010Q4",
+      "last_target_quarter": "2020Q4",
+      "rows_without_target": 0
+    },
+    "dev": {
+      "rows": 16,
+      "feature_quarters": 8,
+      "first_feature_quarter": "2020-12-31",
+      "last_feature_quarter": "2022-09-30",
+      "first_target_quarter": "2021Q1",
+      "last_target_quarter": "2022Q4",
+      "rows_without_target": 0
+    },
+    "test": {
+      "rows": 16,
+      "feature_quarters": 8,
+      "first_feature_quarter": "2022-12-30",
+      "last_feature_quarter": "2024-09-30",
+      "first_target_quarter": "2023Q1",
+      "last_target_quarter": "2024Q4",
+      "rows_without_target": 0
+    },
+    "new_data": {
+      "rows": 12,
+      "feature_quarters": 6,
+      "first_feature_quarter": "2024-12-31",
+      "last_feature_quarter": "2026-03-31",
+      "first_target_quarter": "2025Q1",
+      "last_target_quarter": "2026Q2",
+      "rows_without_target": 2
+    },
+    "new_data_note": "held back for sprint 4; not used for training, tuning or testing"
+  },
+  "cross_validation": {
+    "type": "expanding window on train only",
+    "n_splits": 5,
+    "val_quarters_per_fold": 4,
+    "gap_quarters": 1,
+    "folds": {
+      "0": {
+        "train_last_quarter": "2015-06-30",
+        "val_first_quarter": "2015-12-31",
+        "val_last_quarter": "2016-09-30"
+      },
+      "1": {
+        "train_last_quarter": "2016-06-30",
+        "val_first_quarter": "2016-12-30",
+        "val_last_quarter": "2017-09-29"
+      },
+      "2": {
+        "train_last_quarter": "2017-06-30",
+        "val_first_quarter": "2017-12-29",
+        "val_last_quarter": "2018-09-28"
+      },
+      "3": {
+        "train_last_quarter": "2018-06-29",
+        "val_first_quarter": "2018-12-31",
+        "val_last_quarter": "2019-09-30"
+      },
+      "4": {
+        "train_last_quarter": "2019-06-28",
+        "val_first_quarter": "2019-12-31",
+        "val_last_quarter": "2020-09-30"
+      }
+    }
+  },
+  "columns": {
+    "reporting_date": {
+      "dtype": "datetime64[us]",
+      "description": "Quarter-end date of the FEATURES (dd/mm/yyyy in source, parsed to a date)"
+    },
+    "entity_group": {
+      "dtype": "str",
+      "description": "Lender group: 'All' = Banks + Non-Banks combined; otherwise 'Banks' or 'Non-Banks'"
+    },
+    "loan_format": {
+      "dtype": "str",
+      "description": "PDH = principal dwelling home; BTL = buy-to-let"
+    },
+    "arrears_total": {
+      "dtype": "float64",
+      "description": "Number of mortgage accounts in arrears (all buckets)"
+    },
+    "over180_share": {
+      "dtype": "float64",
+      "description": "Accounts in arrears over 180 days / total accounts in arrears (rebuilt as a residual)"
+    },
+    "b91_180_growth": {
+      "dtype": "float64",
+      "description": "Quarter-on-quarter % change in accounts 91-180 days in arrears (inflow signal)"
+    },
+    "target_next_q": {
+      "dtype": "float64",
+      "description": "Next quarter's value of 'arrears_total' (forecast label); empty for the newest quarter"
+    },
+    "arrears_total_lag1": {
+      "dtype": "float64",
+      "description": "'arrears_total' lagged 1 quarter(s)"
+    },
+    "arrears_total_lag2": {
+      "dtype": "float64",
+      "description": "'arrears_total' lagged 2 quarter(s)"
+    },
+    "arrears_total_lag3": {
+      "dtype": "float64",
+      "description": "'arrears_total' lagged 3 quarter(s)"
+    },
+    "arrears_total_lag4": {
+      "dtype": "float64",
+      "description": "'arrears_total' lagged 4 quarter(s)"
+    },
+    "data_vintage": {
+      "dtype": "str",
+      "description": "Date the raw file was pulled (publisher revises past figures)"
+    },
+    "feature_version": {
+      "dtype": "str",
+      "description": "Feature-set version that produced the row"
+    },
+    "target_quarter": {
+      "dtype": "str",
+      "description": "Quarter the label belongs to (feature quarter + 1); the split is defined on this column"
+    },
+    "split": {
+      "dtype": "str",
+      "description": "train / dev / test / new_data (historical, by target quarter)"
+    }
+  },
+  "created_on": "2026-09-30T05:47:14"
+}
