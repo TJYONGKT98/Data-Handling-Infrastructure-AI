@@ -1,0 +1,22 @@
+# Core data analysis
+numpy
+pandas
+scipy
+
+# Visualisation
+matplotlib
+seaborn
+
+# Statistical modelling and forecasting
+statsmodels
+scikit-learn
+
+# HTTP requests and API access
+requests
+
+# Google Cloud integrations
+google-cloud-storage
+google-cloud-bigquery
+
+# Standard-library modules such as os, re, json, hashlib, datetime and shutil
+# are included with Python and do not need to be installed.
